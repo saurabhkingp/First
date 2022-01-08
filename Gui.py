@@ -27,8 +27,6 @@ def excel_diff(path_OLD, path_NEW):
     df_OLD = df_OLD.set_index(key)
     df_NEW = df_NEW.set_index(key)
     dfDiff = df_NEW.copy()
-    droppedRows = []
-    newRows = []
     cols_OLD = df_OLD.columns
     cols_NEW = df_NEW.columns
 
@@ -49,42 +47,17 @@ def excel_diff(path_OLD, path_NEW):
                     dfDiff.loc[row, col] = df_NEW.loc[row, col]
                 else:
                     sx.append(col)
-                    if len(added_col)!=0 and len(removed_col)==0:
-                        dfDiff.loc[row,'Comment']='Modified Columns: {}- Added Columns: {} '.format([c for c in sx],added_col)
-                    elif len(added_col)!=0 and len(removed_col)!=0:
-                        dfDiff.loc[row,'Comment']='Modified Columns: {}- Added Columns: {} -Removed Columns: {}'.format([c for c in sx],added_col,removed_col)
-                    elif len(removed_col)!=0 and len(added_col)==0:
-                        dfDiff.loc[row,'Comment']='Modified Columns: {}- Removed Columns: {}'.format([c for c in sx],removed_col)
-                    elif len(removed_col)==0 and len(added_col)==0:
-                        dfDiff.loc[row,'Comment']='Modified Columns: {}'.format([c for c in sx])
+                    dfDiff.loc[row,'Comment']='Modified Columns: {}'.format([c for c in sx])
             sx.clear()
-            if dfDiff.loc[row, "Comment"] == "" : 
-                dfDiff.drop(row, inplace=True)
-        else:
-            dfDiff.loc[row,'Comment']='Added'
-            newRows.append(row)
-            
-    for row in df_OLD.index:
-        if row not in df_NEW.index:
-            droppedRows.append(row)
-            dfDiff = dfDiff.append(df_OLD.loc[row, :])
-            dfDiff.loc[row,'Comment']='Removed'
 
-    # nan_value = float("NaN")
-    # dataframes=[dfDiff,df_OLD,df_NEW]
-    # for v in dataframes:
-    #     v.replace(0, nan_value, inplace=True)
-    #     v.replace("", nan_value, inplace=True)
-    #     v.dropna(how='all', axis=1, inplace=True)
+            
     writer = pd.ExcelWriter(r"output-delta.xlsx", engine="xlsxwriter")
-    df_OLD.to_excel(writer, sheet_name="Old Input", index=True)
-    df_NEW.to_excel(writer, sheet_name="New Input", index=True)
     dfDiff.to_excel(writer, sheet_name="Delta", index=True)
     writer.save()
 
 def main():
-    path_OLD = Path(r"KPI_Delta_Document_20220106191702.xlsx")
-    path_NEW = Path(r"KPI_Delta_Document_20220106191702.xlsx")
+    path_OLD = Path(r"Input.xlsx")
+    path_NEW = Path(r"Input.xlsx")
     excel_diff(path_OLD, path_NEW)
 if __name__ == "__main__":
     main()
